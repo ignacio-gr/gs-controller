@@ -1,0 +1,57 @@
+//
+// !!! WARNING !!! AUTO-GENERATED FILE!
+// PLEASE DO NOT MODIFY IT AND USE "platformio.ini":
+// https://docs.platformio.org/page/projectconf/section_env_build.html#build-flags
+//
+{
+    "configurations": [
+        {
+            "name": "PlatformIO",
+            "includePath": [
+                "/Users/dev/Projects/SpaceLab/GsController/include",
+                "/Users/dev/Projects/SpaceLab/GsController/src",
+                "/Users/dev/.platformio/packages/framework-arduino-avr/cores/arduino",
+                "/Users/dev/.platformio/packages/framework-arduino-avr/variants/mega",
+                "/Users/dev/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                "/Users/dev/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                "/Users/dev/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                "/Users/dev/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                "/Users/dev/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                ""
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "path": [
+                    "/Users/dev/Projects/SpaceLab/GsController/include",
+                    "/Users/dev/Projects/SpaceLab/GsController/src",
+                    "/Users/dev/.platformio/packages/framework-arduino-avr/cores/arduino",
+                    "/Users/dev/.platformio/packages/framework-arduino-avr/variants/mega",
+                    "/Users/dev/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
+                    "/Users/dev/.platformio/packages/framework-arduino-avr/libraries/HID/src",
+                    "/Users/dev/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
+                    "/Users/dev/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
+                    "/Users/dev/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                    ""
+                ]
+            },
+            "defines": [
+                "PLATFORMIO=50204",
+                "ARDUINO_AVR_MEGA2560",
+                "GS_CONTROLLER",
+                "F_CPU=16000000L",
+                "ARDUINO_ARCH_AVR",
+                "ARDUINO=10808",
+                "__AVR_ATmega2560__",
+                ""
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++11",
+            "compilerPath": "/Users/dev/.platformio/packages/toolchain-atmelavr/bin/avr-gcc",
+            "compilerArgs": [
+                "-mmcu=atmega2560",
+                ""
+            ]
+        }
+    ],
+    "version": 4
+}
