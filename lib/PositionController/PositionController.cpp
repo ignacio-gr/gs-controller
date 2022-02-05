@@ -66,7 +66,7 @@ bool PositionController::setNewPos(int32_t az, int32_t el) {
     azStepNext = azStepNextAux;
     elStepNext = elStepNextAux;
   } else {
-      cPrintLn("Esta posicion no se peude alcanzar");
+    cPrintLn("Esta posicion no se peude alcanzar");
   }
   return true;
 };
