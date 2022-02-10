@@ -105,3 +105,27 @@ int PositionController::getValueByString(uint8_t* buf, uint8_t* s, char endSymbo
 
   return value;
 };
+
+void PositionController::printActualPosition() {
+  Serial.println("");
+  Serial.print("Position -> ");
+  Serial.print(" Azimut: ");
+  Serial.print(getActualAzimutFloat());
+  Serial.print(" Elevation: ");
+  Serial.print(getActualElevationFloat());
+  Serial.println("");
+
+  Serial.print("Steps actual -> ");
+  Serial.print(" Azimut: ");
+  Serial.print(getActualStepAzimut());
+  Serial.print(" Elevation: ");
+  Serial.print(getActualStepElevation());
+  Serial.println("");
+
+  Serial.print("Steps next ->   ");
+  Serial.print(" Azimut: ");
+  Serial.print(getNextStepAzimut());
+  Serial.print(" Elevation: ");
+  Serial.print(getNextStepElevation());
+  Serial.println("");
+};

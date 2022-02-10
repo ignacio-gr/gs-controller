@@ -24,28 +24,36 @@ void MotionController::manualMove() {
       if (pulseMotor(EL_PUL)) position->decEl();
     }
   } else {  // BTN central pulsado
-            // TODO detectar una pulsacion y ejecutar X pulsos, por ejemplo 1 grado
+    float salto = 1.0;
+    uint32_t pulses = position->getStepsByDegrees(salto);
+    String logPulses = (String) " " + salto + " grados";
+
     if (pulseAzUp() && limitSwitchesAzimutUP()) {
-      cPrintLn("MANUAL_AZ_UP_");
+      cPrintLn("MANUAL_AZ_UP_" + logPulses);
       setDirection(AZ_DIR, UP);
-      moveXPulses(AZ_PUL, AZ_DIR, UP, (uint32_t)7143 * 400 / 6400);
+      uint32_t count = moveXPulses(AZ_PUL, AZ_DIR, UP, pulses);
+      position->incAz(count);
     }
     if (pulseAzDown() && limitSwitchesAzimutDOWN()) {
-      cPrintLn("MANUAL_AZ_DOWN_");
+      cPrintLn("MANUAL_AZ_DOWN_" + logPulses);
       setDirection(AZ_DIR, DOWN);
-      moveXPulses(AZ_PUL, AZ_DIR, DOWN, (uint32_t)7143 * 400 / 6400);
+      uint32_t count = moveXPulses(AZ_PUL, AZ_DIR, DOWN, pulses);
+      position->decAz(count);
     }
     if (pulseElUp() && limitSwitchesElevationUP()) {
-      cPrintLn("MANUAL_EL_UP_");
+      cPrintLn("MANUAL_EL_UP_" + logPulses);
       setDirection(EL_DIR, UP);
-      moveXPulses(EL_PUL, EL_DIR, UP, (uint32_t)7143);
+      uint32_t count = moveXPulses(EL_PUL, EL_DIR, UP, pulses);
+      position->incEl(count);
     }
     if (pulseElUp() && limitSwitchesElevationDOWN()) {
-      cPrintLn("MANUAL_EL_DOWN_");
+      cPrintLn("MANUAL_EL_DOWN_" + logPulses);
       setDirection(EL_DIR, DOWN);
-      moveXPulses(EL_PUL, EL_DIR, DOWN, (uint32_t)7143 * 400 / 6400);
+      uint32_t count = moveXPulses(EL_PUL, EL_DIR, DOWN, pulses);
+      position->decEl(count);
     }
   }
+  position->printActualPosition();
 }
 
 void MotionController::checkPosition() {
@@ -85,8 +93,10 @@ void MotionController::initialCalibration() {
 
   cPrintLn("Iniciando calibracion automatica de la antena");
 
-  while (!pulseStop());
-  while (!pulseStop());
+  while (!pulseStop())
+    ;
+  while (!pulseStop())
+    ;
 
   // Azimut calibration
   while (!azIsInRef())
@@ -160,8 +170,6 @@ void MotionController::initialCalibration() {
 
   calibrated = true;
 }  // end initialCalibration
-
-
 
 ///////////////////////////
 /////     Helpers     /////

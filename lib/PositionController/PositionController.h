@@ -15,10 +15,10 @@
 
 // TODO establecer limites, en steps, establecerlos por lectura empirica no por grados, los pasos que esta los limites
 // con respecto al Ref siempre sera igual da igual al calibracion
-#define LIMIT_AZ_UP (180 + 3) * FACTOR / PRECISION
-#define LIMIT_AZ_DOWN (-180 + 3) * FACTOR / PRECISION
-#define LIMIT_EL_UP (180 + 10) * FACTOR / PRECISION
-#define LIMIT_EL_DOWN (0 + 10) * FACTOR / PRECISION
+#define LIMIT_AZ_UP ((180 + 3) * FACTOR / PRECISION * MICRO_STEPS / MICRO_STEPS_REF)
+#define LIMIT_AZ_DOWN ((-180 + 3) * FACTOR / PRECISION * MICRO_STEPS / MICRO_STEPS_REF)
+#define LIMIT_EL_UP ((180 + 10) * FACTOR / PRECISION * MICRO_STEPS / MICRO_STEPS_REF)
+#define LIMIT_EL_DOWN ((0 + 10) * FACTOR / PRECISION * MICRO_STEPS / MICRO_STEPS_REF)
 
 class PositionController {
  public:
@@ -61,6 +61,8 @@ class PositionController {
     return 0;
   };
   void listenGPredict();
+
+  void printActualPosition();
 
  private:
   int32_t azStepActual = 0;

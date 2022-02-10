@@ -92,20 +92,18 @@ class MotionController {
     return false;
   };
 
-  void moveXPulses(uint8_t pin, uint8_t dirPin, uint8_t dir, uint32_t pulses) {
+  uint32_t moveXPulses(uint8_t pin, uint8_t dirPin, uint8_t dir, uint32_t pulses) {
     timeBetweenPulses = 500;
     setDirection(dirPin, dir);
-    for (uint32_t i = 0; i < pulses; i++) {
+    uint32_t i = 0;
+    for (i = 0; i < pulses; i++) {
+      if (allSwitches()) return i;
+      if (pulseStop()) return i;
       pulseMotor(pin);
-      // TODO modificar position
-      // TODO revisasr safety
-      // if (allSwitches() || digitalRead(MANUAL_STOP)) {
-      // return;
-      //}
       cPrintLn(i);
     }
-    // delay(5000);
     timeBetweenPulses = 1;
+    return i;
   };
 
   bool azIsInRef() { return !digitalRead(SW_AZ_REF); };
@@ -129,6 +127,5 @@ class MotionController {
   bool pulseElUp();
   bool pulseElDown();
 };  // end class MotionController
-
 
 #endif
