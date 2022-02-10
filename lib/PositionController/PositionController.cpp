@@ -53,8 +53,8 @@ void PositionController::listenGPredict() {
 };
 
 bool PositionController::setNewPos(int32_t az, int32_t el) {
-  int32_t azStepNextAux = (az - 180 * FACTOR + ERROR_AZ) / PRECISION;
-  int32_t elStepNextAux = (el + ERROR_EL) / PRECISION;
+  int32_t azStepNextAux = getStepsByDegrees(az - 180 * FACTOR + ERROR_AZ);
+  int32_t elStepNextAux = getStepsByDegrees(el + ERROR_EL);
   cPrint("New position -> Azimut: ");
   cPrint((float)az / FACTOR);
   cPrint("º Elevation: ");

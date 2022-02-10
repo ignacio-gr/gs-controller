@@ -3,8 +3,11 @@
 
 #include "../../include/ArduinoLib.h"
 
-#define PRECISION 14  // 1 step = 0,00014 grados * 100.000
+// 1 step = 0.00014 grados * 100000 // 14 grados por 100000 steps con 6400 uStep -> 15.625 pasos completos
+#define PRECISION 14
 #define FACTOR 100000
+#define MICRO_STEPS_REF 6400
+#define MICRO_STEPS 400
 
 // TODO establecer puntos iniciales de referencia, en grados
 #define ERROR_EL 3 * FACTOR
@@ -21,15 +24,22 @@ class PositionController {
  public:
   float getActualAzimutFloat() { return (float)getActualAzimut() / FACTOR + 180; };
   float getActualElevationFloat() { return (float)getActualElevation() / FACTOR + 90; };
-  int32_t getActualAzimut() { return azStepActual * PRECISION - ERROR_AZ; };
-  int32_t getActualElevation() { return elStepActual * PRECISION - ERROR_EL; };
+  int32_t getActualAzimut() { return azStepActual * PRECISION * MICRO_STEPS_REF / MICRO_STEPS - ERROR_AZ; };
+  int32_t getActualElevation() { return elStepActual * PRECISION * MICRO_STEPS_REF / MICRO_STEPS - ERROR_EL; };
 
-  int32_t getStepsByDegrees(int32_t degress) { return degress / PRECISION; };
+  int32_t getStepsByDegrees(int32_t degress) { return degress / PRECISION * MICRO_STEPS / MICRO_STEPS_REF; };
   int32_t getStepsByDegrees(float degress) { return getStepsByDegrees(degress * FACTOR); };
+
   int32_t incAz() { return azStepActual++; };
   int32_t decAz() { return azStepActual--; };
   int32_t incEl() { return elStepActual++; };
   int32_t decEl() { return elStepActual--; };
+
+  int32_t incAz(int32_t pulses) { return azStepActual += pulses; };
+  int32_t decAz(int32_t pulses) { return azStepActual -= pulses; };
+  int32_t incEl(int32_t pulses) { return elStepActual += pulses; };
+  int32_t decEl(int32_t pulses) { return elStepActual -= pulses; };
+
   void clearAzSteps() {
     azStepActual = 0;
     azStepNext = 0;

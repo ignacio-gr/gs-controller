@@ -1,28 +1,50 @@
 #include "MotionController.h"
 
 void MotionController::manualMove() {
-  if (!digitalRead(MANUAL_AZ_UP)) {
-    cPrintLn("MANUAL_AZ_UP");
-    setDirection(AZ_DIR, UP);
-    if (pulseMotor(AZ_PUL)) position->incAz();
-  }
-  if (!digitalRead(MANUAL_AZ_DONW)) {
-    cPrintLn("MANUAL_AZ_DONW");
-    setDirection(AZ_DIR, DOWN);
-    if (pulseMotor(AZ_PUL)) position->decAz();
-  }
-  if (!digitalRead(MANUAL_EL_UP)) {
-    cPrintLn("MANUAL_EL_UP");
-    setDirection(EL_DIR, UP);
-    if (pulseMotor(EL_PUL)) position->incEl();
-  }
-  if (!digitalRead(MANUAL_EL_DOWN)) {
-    cPrintLn("MANUAL_EL_DOWN");
-    setDirection(EL_DIR, DOWN);
-    if (pulseMotor(EL_PUL)) position->decEl();
-  }
-  if (!digitalRead(MANUAL_STOP)) {
-    cPrintLn("MANUAL_STOP");
+  if (digitalRead(MANUAL_STOP)) {  // BTN central no pulsado
+    // cPrintLn("MANUAL_STOP");
+    if (pulseAzUp() && limitSwitchesAzimutUP()) {
+      cPrintLn("MANUAL_AZ_UP");
+      setDirection(AZ_DIR, UP);
+      if (pulseMotor(AZ_PUL)) position->incAz();
+    }
+    if (pulseAzDown() && limitSwitchesAzimutDOWN()) {
+      cPrintLn("MANUAL_AZ_DOWN");
+      setDirection(AZ_DIR, DOWN);
+      if (pulseMotor(AZ_PUL)) position->decAz();
+    }
+    if (pulseElUp() && limitSwitchesElevationUP()) {
+      cPrintLn("MANUAL_EL_UP");
+      setDirection(EL_DIR, UP);
+      if (pulseMotor(EL_PUL)) position->incEl();
+    }
+    if (pulseElDown() && limitSwitchesElevationDOWN()) {
+      cPrintLn("MANUAL_EL_DOWN");
+      setDirection(EL_DIR, DOWN);
+      if (pulseMotor(EL_PUL)) position->decEl();
+    }
+  } else {  // BTN central pulsado
+            // TODO detectar una pulsacion y ejecutar X pulsos, por ejemplo 1 grado
+    if (pulseAzUp() && limitSwitchesAzimutUP()) {
+      cPrintLn("MANUAL_AZ_UP_");
+      setDirection(AZ_DIR, UP);
+      moveXPulses(AZ_PUL, AZ_DIR, UP, (uint32_t)7143 * 400 / 6400);
+    }
+    if (pulseAzDown() && limitSwitchesAzimutDOWN()) {
+      cPrintLn("MANUAL_AZ_DOWN_");
+      setDirection(AZ_DIR, DOWN);
+      moveXPulses(AZ_PUL, AZ_DIR, DOWN, (uint32_t)7143 * 400 / 6400);
+    }
+    if (pulseElUp() && limitSwitchesElevationUP()) {
+      cPrintLn("MANUAL_EL_UP_");
+      setDirection(EL_DIR, UP);
+      moveXPulses(EL_PUL, EL_DIR, UP, (uint32_t)7143);
+    }
+    if (pulseElUp() && limitSwitchesElevationDOWN()) {
+      cPrintLn("MANUAL_EL_DOWN_");
+      setDirection(EL_DIR, DOWN);
+      moveXPulses(EL_PUL, EL_DIR, DOWN, (uint32_t)7143 * 400 / 6400);
+    }
   }
 }
 
@@ -50,10 +72,21 @@ void MotionController::checkPosition() {
       if (pulseMotor(EL_PUL)) position->decEl();
     }
   }
-}
+}  // end checkPosition
 
 void MotionController::initialCalibration() {
+  if (!isInParkingPosition()) {
+    cPrintLn("La antena no esta correctamente posicionada para iniciar automaticamente.");
+    cPrintLn("Por favor mueve la antena manualmente para poder continuar");
+    while (!isInParkingPosition()) {
+      manualMove();
+    }
+  }
+
   cPrintLn("Iniciando calibracion automatica de la antena");
+
+  while (!pulseStop());
+  while (!pulseStop());
 
   // Azimut calibration
   while (!azIsInRef())
@@ -63,26 +96,32 @@ void MotionController::initialCalibration() {
   cPrintLn("Move AZ UP");
   while (azIsInRef()) {
     setDirection(AZ_DIR, UP);
-    pulseMotor(AZ_DIR);
+    pulseMotor(AZ_PUL);
     countAzUp++;
+    cPrintLn(countAzUp);
   }
   cPrintLn(countAzUp);
   cPrintLn("Move AZ DOWN");
   while (azIsInRef() || countAzDown < countAzUp) {
     setDirection(AZ_DIR, DOWN);
-    pulseMotor(AZ_DIR);
+    pulseMotor(AZ_PUL);
     countAzDown++;
+    cPrintLn(countAzDown);
   }
   cPrintLn(countAzDown);
   cPrintLn("Move AZ to Center");
   uint32_t diffAz = countAzDown / 2;
   for (uint32_t i = 0; i < diffAz; i++) {
     setDirection(AZ_DIR, UP);
-    pulseMotor(AZ_DIR);
+    pulseMotor(AZ_PUL);
+    cPrintLn(i);
   }
   cPrintLn("AZ in center of Ref");
 
   position->clearAzSteps();
+
+  while (true)
+    ;
 
   // Elevation calibration
   while (!elIsInRef())
@@ -120,4 +159,85 @@ void MotionController::initialCalibration() {
   cPrintLn("Finalizada la calibracion automatica de la antena");
 
   calibrated = true;
-}
+}  // end initialCalibration
+
+
+
+///////////////////////////
+/////     Helpers     /////
+///////////////////////////
+
+bool MotionController::pulseStop() {
+  static bool ant = true;
+  bool btn = !digitalRead(MANUAL_STOP);
+  if (btn && !ant) {
+    delay(20);
+    btn = !digitalRead(MANUAL_STOP);
+    if (btn && !ant) {
+      ant = btn;
+      return true;
+    }
+  }
+  ant = btn;
+  return false;
+};
+
+bool MotionController::pulseAzUp() {
+  static bool ant = true;
+  bool btn = !digitalRead(MANUAL_AZ_UP);
+  if (btn && !ant) {
+    delay(20);
+    btn = !digitalRead(MANUAL_AZ_UP);
+    if (btn && !ant) {
+      ant = btn;
+      return true;
+    }
+  }
+  ant = btn;
+  return false;
+};
+
+bool MotionController::pulseAzDown() {
+  static bool ant = true;
+  bool btn = !digitalRead(MANUAL_AZ_DOWN);
+  if (btn && !ant) {
+    delay(20);
+    btn = !digitalRead(MANUAL_AZ_DOWN);
+    if (btn && !ant) {
+      ant = btn;
+      return true;
+    }
+  }
+  ant = btn;
+  return false;
+};
+
+bool MotionController::pulseElUp() {
+  static bool ant = true;
+  bool btn = !digitalRead(MANUAL_EL_UP);
+  if (btn && !ant) {
+    delay(20);
+    btn = !digitalRead(MANUAL_EL_UP);
+    if (btn && !ant) {
+      ant = btn;
+      return true;
+    }
+  }
+  ant = btn;
+  return false;
+};
+
+bool MotionController::pulseElDown() {
+  static bool ant = true;
+  bool btn = !digitalRead(MANUAL_EL_DOWN);
+  if (btn && !ant) {
+    delay(20);
+    btn = !digitalRead(MANUAL_EL_DOWN);
+    if (btn && !ant) {
+      ant = btn;
+      return true;
+    }
+  }
+  ant = btn;
+  return false;
+};

@@ -26,7 +26,7 @@
 #define DOWN LOW
 
 #define MANUAL_AZ_UP 36
-#define MANUAL_AZ_DONW  34
+#define MANUAL_AZ_DOWN 34
 #define MANUAL_EL_UP 30
 #define MANUAL_EL_DOWN 32
 #define MANUAL_STOP 28
@@ -53,9 +53,8 @@ class MotionController {
     pinMode(SW_EL_2ND, INPUT_PULLUP);
     pinMode(SW_EL_REF, INPUT_PULLUP);
 
-    
     pinMode(MANUAL_AZ_UP, INPUT_PULLUP);
-    pinMode(MANUAL_AZ_DONW, INPUT_PULLUP);
+    pinMode(MANUAL_AZ_DOWN, INPUT_PULLUP);
     pinMode(MANUAL_EL_UP, INPUT_PULLUP);
     pinMode(MANUAL_EL_DOWN, INPUT_PULLUP);
     pinMode(MANUAL_STOP, INPUT_PULLUP);
@@ -65,12 +64,7 @@ class MotionController {
   void initialCalibration();
   bool isCalibrated() { return calibrated; };
 
-  bool azIsInRef() { return !digitalRead(SW_AZ_REF); };
-  bool elIsInRef() { return !digitalRead(SW_EL_REF); };
-  bool limitSwitchesAzimut() { return !digitalRead(SW_AZ_UP) || !digitalRead(SW_AZ_DOWN) || !digitalRead(SW_AZ_2ND); };
-  bool limitSwitchesElevation() {
-    return !digitalRead(SW_EL_UP) || !digitalRead(SW_EL_DOWN) || !digitalRead(SW_EL_2ND);
-  };
+  bool isInParkingPosition() { return azIsInRef() && elIsInRef(); };
 
   void manualMove();
 
@@ -97,6 +91,44 @@ class MotionController {
     }
     return false;
   };
-};
+
+  void moveXPulses(uint8_t pin, uint8_t dirPin, uint8_t dir, uint32_t pulses) {
+    timeBetweenPulses = 500;
+    setDirection(dirPin, dir);
+    for (uint32_t i = 0; i < pulses; i++) {
+      pulseMotor(pin);
+      // TODO modificar position
+      // TODO revisasr safety
+      // if (allSwitches() || digitalRead(MANUAL_STOP)) {
+      // return;
+      //}
+      cPrintLn(i);
+    }
+    // delay(5000);
+    timeBetweenPulses = 1;
+  };
+
+  bool azIsInRef() { return !digitalRead(SW_AZ_REF); };
+  bool elIsInRef() { return !digitalRead(SW_EL_REF); };
+
+  bool limitSwitchesAzimut() { return !digitalRead(SW_AZ_UP) || !digitalRead(SW_AZ_DOWN) || !digitalRead(SW_AZ_2ND); };
+  bool limitSwitchesElevation() {
+    return !digitalRead(SW_EL_UP) || !digitalRead(SW_EL_DOWN) || !digitalRead(SW_EL_2ND);
+  };
+
+  bool limitSwitchesAzimutUP() { return !digitalRead(SW_AZ_UP) || !digitalRead(SW_AZ_2ND); };
+  bool limitSwitchesAzimutDOWN() { return !digitalRead(SW_AZ_DOWN) || !digitalRead(SW_AZ_2ND); };
+  bool limitSwitchesElevationUP() { return !digitalRead(SW_EL_UP) || !digitalRead(SW_EL_2ND); };
+  bool limitSwitchesElevationDOWN() { return !digitalRead(SW_EL_DOWN) || !digitalRead(SW_EL_2ND); };
+
+  bool allSwitches() { return limitSwitchesAzimut() || limitSwitchesElevation(); }
+
+  bool pulseStop();
+  bool pulseAzUp();
+  bool pulseAzDown();
+  bool pulseElUp();
+  bool pulseElDown();
+};  // end class MotionController
+
 
 #endif

@@ -10,37 +10,26 @@ void setup() {
 
   cPrintLn("Estación terrena UVigo SpaceLab");
 
-  if (!(motion.azIsInRef() && motion.elIsInRef())) {
-    cPrintLn("La antena no esta correctamente posicionada para iniciar automaticamente.");
-    cPrintLn("Por favor mueve la antena manualmente para poder continuar");
-    while (!(motion.azIsInRef() && motion.elIsInRef())) {
-      // TODO movimientos manuales para posicionar la antena tocando Ref
-      motion.manualMove();
-    }
+  // TODO delete this while
+  pinMode(13, INPUT_PULLUP);
+  while (!digitalRead(13)) {
+    motion.manualMove();
   }
 
-    while (true) {
-      // TODO delete this while
-      motion.manualMove();
-    }
-
-  delay(1000);
   motion.initialCalibration();
 }
 
 void loop() {
+  while (!digitalRead(13)) {
+    motion.manualMove();
+  }
+
   static uint32_t lastPrint = millis();
   if (millis() - lastPrint > 5000) {
     printActualPosition();
     lastPrint = millis();
   }
-  /*
-  static uint32_t lastInc = micros();
-  if (micros() - lastInc > 100) {
-    position.incAz();
-    position.incEl();
-    lastInc = micros();
-  }*/
+
   position.listenGPredict();
   motion.checkPosition();
 }
