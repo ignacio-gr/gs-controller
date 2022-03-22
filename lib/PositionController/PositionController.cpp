@@ -2,55 +2,47 @@
 #include "PositionController.h"
 
 void PositionController::listenGPredict() {
-  int count = gPredictSerial.available();
-  if (count > 0) {
-    char comando[50];
-    memset(comando, 0, sizeof(comando));
-    uint8_t pos = 0;
+  if (interfazSerial.available()>0) {
+    while (interfazSerial.available() > 0) {
+      char c = interfazSerial.read();
 
-    while (gPredictSerial.available() > 0) {
-      delay(5);
-      comando[pos] = gPredictSerial.read();
-      pos++;
-      if (pos > count) break;
-    }
-    cPrint("comando recivido -> ");
-    cPrintLn(comando);
+      if (c == GET_POS) sendPosition();
 
-    //  AZ EL
-    if (comando[0] == 'A' && comando[1] == 'Z' && comando[2] == ' ' && comando[3] == 'E' && comando[4] == 'L') {
-      cPrintLn("Comando recivido de lectura de posicion");
-
-      gPrint("AZ");
-      gPrint(getActualAzimutFloat());
-      gPrint(" EL");
-      gPrint(getActualElevationFloat());
-      gPrintLn("");
-    }
-
-    // AZ57.1 EL15.1 UP000 XXX DN000 XXX
-    if (comando[0] == 'A' && comando[1] == 'Z' && isNumber(comando[2])) {
-      cPrintLn("Comando recivido de escritura de posicion");
-
-      uint8_t start = 2;
-      uint16_t value = getValueByString((uint8_t*)comando, &start, '.');
-      uint16_t decimal = getValueByString((uint8_t*)comando, &start, ' ', true);
-
-      uint32_t degreesAz = value * FACTOR + decimal * (FACTOR / 10000);
-
-      if (!(comando[start] == 'E' && comando[start + 1] == 'L' && isNumber(comando[start + 2]))) return;
-      start = start + 2;
-      uint16_t valueEL = getValueByString((uint8_t*)comando, &start, '.');
-      uint16_t decimalEl = getValueByString((uint8_t*)comando, &start, ' ', true);
-      uint32_t degreesEl = valueEL * FACTOR + decimalEl * (FACTOR / 10000);
-
-      // Response to gPredict
-      gPrint(comando);  // TODO construir, non devolver o mesmo. Se devolve mesmos valores ou los actuales?
-      gPrintLn(" +OK");
-      setNewPos(degreesAz, degreesEl);
+      if (c == SET_POS) {
+        saveCommand = true;
+        buffer = "";
+      }
+      if (saveCommand && c == END_COMMAND) {
+        saveCommand = false;
+        parseCommandAndApply();
+        buffer += END_COMMAND;
+        interfazSerial.println(buffer.c_str());
+      }
+      if (saveCommand) buffer += c;
     }
   }  // if available
 };
+
+void PositionController::parseCommandAndApply() {
+  // P180.00 45.00\n
+  if (!(buffer[0] == SET_POS)) return;
+
+  ParseNumbers parseNumbers;
+  uint8_t start = 1;
+  int az_e = parseNumbers.getValue(buffer, &start, ',', false);
+  int az_d = parseNumbers.getValue(buffer, &start, ' ', true);
+  int el_e = parseNumbers.getValue(buffer, &start, ',', false);
+  int el_d = parseNumbers.getValue(buffer, &start, '\n', true);
+
+  if (az_e == -1 || az_d == -1 || el_e == -1 || el_d == -1) return;  // TODO ver bien que hacer con el error
+
+  cPrintLn((String) "Set pos- >  az: " + az_e + "," + az_d + " el: " + el_e + "," + el_d);
+
+  int32_t az = az_e * FACTOR + az_d * (FACTOR / 10000);
+  int32_t el = el_e * FACTOR + el_d * (FACTOR / 10000);
+
+  setNewPos(az, el);
+}
 
 bool PositionController::setNewPos(int32_t az, int32_t el) {
   int32_t azStepNextAux = getStepsByDegrees(az - 180 * FACTOR + ERROR_AZ);
@@ -66,66 +58,41 @@ bool PositionController::setNewPos(int32_t az, int32_t el) {
     azStepNext = azStepNextAux;
     elStepNext = elStepNextAux;
   } else {
-    cPrintLn("Esta posicion no se peude alcanzar");
+    cPrintLn("Esta posicion no se puede alcanzar");
   }
   return true;
 };
 
-int PositionController::getValueByString(uint8_t* buf, uint8_t* s, char endSymbol, bool decimal) {
-  int value = -1;
-  uint8_t start = *s;
-  if (isNumber(buf[start]) && buf[start + 1] == endSymbol) {
-    value = getNumber(buf[start]);
-    *s += 2;
-    if (decimal) value = value * 1000;
-  }
-  if (isNumber(buf[start]) && isNumber(buf[start + 1]) && buf[start + 2] == endSymbol) {
-    value = getNumber(buf[start]) * 10;
-    value += getNumber(buf[start + 1]);
-    *s += 3;
-    if (decimal) value = value * 100;
-  }
-  if (isNumber(buf[start]) && isNumber(buf[start + 1]) && isNumber(buf[start + 2]) && buf[start + 3] == endSymbol) {
-    value = getNumber(buf[start]) * 100;
-    value += getNumber(buf[start + 1]) * 10;
-    value += getNumber(buf[start + 2]);
-    *s += 4;
-    if (decimal) value = value * 10;
-  }
-  if (isNumber(buf[start]) && isNumber(buf[start + 1]) && isNumber(buf[start + 2]) && isNumber(buf[start + 3]) &&
-      buf[start + 4] == endSymbol) {
-    value = getNumber(buf[start]) * 1000;
-    value += getNumber(buf[start + 1]) * 100;
-    value += getNumber(buf[start + 2]) * 10;
-    value += getNumber(buf[start + 3]);
-    *s += 5;
-  }
+void PositionController::sendPosition() {
+  iPrint("AZ");
+  iPrint(getActualAzimut());
+  iPrint(" EL");
+  iPrint(getActualElevation());
+  iPrintLn(" $");
+}
 
-  if (value > 9999) value = -1;
+void PositionController::printActualPosition(){
+    /*
+    cPrintLn("");
+    cPrint("Position -> ");
+    cPrint(" Azimut: ");
+    cPrint(getActualAzimutFloat());
+    cPrint(" Elevation: ");
+    cPrint(getActualElevationFloat());
+    cPrintLn("");
 
-  return value;
-};
+    cPrint("Steps actual -> ");
+    cPrint(" Azimut: ");
+    cPrint(getActualStepAzimut());
+    cPrint(" Elevation: ");
+    cPrint(getActualStepElevation());
+    cPrintLn("");
 
-void PositionController::printActualPosition() {
-  Serial.println("");
-  Serial.print("Position -> ");
-  Serial.print(" Azimut: ");
-  Serial.print(getActualAzimutFloat());
-  Serial.print(" Elevation: ");
-  Serial.print(getActualElevationFloat());
-  Serial.println("");
-
-  Serial.print("Steps actual -> ");
-  Serial.print(" Azimut: ");
-  Serial.print(getActualStepAzimut());
-  Serial.print(" Elevation: ");
-  Serial.print(getActualStepElevation());
-  Serial.println("");
-
-  Serial.print("Steps next ->   ");
-  Serial.print(" Azimut: ");
-  Serial.print(getNextStepAzimut());
-  Serial.print(" Elevation: ");
-  Serial.print(getNextStepElevation());
-  Serial.println("");
+    cPrint("Steps next ->   ");
+    cPrint(" Azimut: ");
+    cPrint(getNextStepAzimut());
+    cPrint(" Elevation: ");
+    cPrint(getNextStepElevation());
+    cPrintLn("");
+    */
 };

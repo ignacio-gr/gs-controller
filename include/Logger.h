@@ -24,20 +24,6 @@ void cPrintLn(T const& value, int format) {
   Serial.println(value, format);
 }
 
-// GPredict serial comunication
-
-extern HardwareSerial& gPredictSerial ;
-
-template <typename T>
-void gPrint(T const& value) {
-  gPredictSerial.print(value);
-}
-
-template <typename T>
-void gPrintLn(T const& value) {
-  gPredictSerial.println(value);
-}
-
 // Interfaz serial comunication
 extern HardwareSerial& interfazSerial ;
 

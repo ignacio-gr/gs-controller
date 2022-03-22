@@ -18,8 +18,7 @@
 ////////////////////////////
 ////       Clases       ////
 ////////////////////////////
-HardwareSerial& gPredictSerial = Serial1;
-HardwareSerial& interfazSerial = Serial2;
+HardwareSerial& interfazSerial = Serial1;
 PositionController position;
 MotionController motion(&position);
 

@@ -4,13 +4,13 @@
 #include "../../include/ArduinoLib.h"
 #include "../PositionController/PositionController.h"
 
-#define SW_AZ_UP 51
-#define SW_AZ_DOWN 47
+#define SW_AZ_UP 47
+#define SW_AZ_DOWN 51
 #define SW_AZ_2ND 53
 #define SW_AZ_REF 49
 
-#define SW_EL_UP 43
-#define SW_EL_DOWN 39
+#define SW_EL_UP 39
+#define SW_EL_DOWN 43
 #define SW_EL_2ND 45
 #define SW_EL_REF 41
 
@@ -64,22 +64,26 @@ class MotionController {
   void initialCalibration();
   bool isCalibrated() { return calibrated; };
 
-  bool isInParkingPosition() { return azIsInRef() && elIsInRef(); };
+  bool isInParkingPosition() { return azIsInRef() && !elIsInRef(); };
 
   void manualMove();
 
  private:
   PositionController* position;
   bool calibrated = false;  // TODO false
-  uint16_t timePulse = 50;
-  uint32_t timeBetweenPulses = 1;
+  uint16_t timePulse = 50;  // minimo 3
+  uint32_t timeBetweenPulses = 500;
   uint32_t lastPulse = 0;
 
   void restartSpeed() { timeBetweenPulses = 15; };
 
-  void setDirection(uint8_t pin, uint8_t dir) { digitalWrite(pin, dir); };
+  void setDirection(uint8_t pin, uint8_t dir) {
+    digitalWrite(pin, dir);
+    delayMicroseconds(10);
+  };
 
   bool pulseMotor(uint8_t pin) {
+    if (timeBetweenPulses < 300) timeBetweenPulses = 300;
     if (micros() - lastPulse > timeBetweenPulses) {
       delayMicroseconds(timePulse);
       digitalWrite(pin, LOW);
@@ -100,10 +104,50 @@ class MotionController {
       if (allSwitches()) return i;
       if (pulseStop()) return i;
       pulseMotor(pin);
-      cPrintLn(i);
+      // cPrintLn(i);  // TODO estudiar porque hace falta esto, puede ser por el ancho de pulso
     }
-    timeBetweenPulses = 1;
     return i;
+  };
+
+  bool moveAzWest() {
+    if (!limitSwitchesAzimutDOWN()) return false;
+    setDirection(AZ_DIR, DOWN);
+    if (pulseMotor(AZ_PUL)) {
+      position->decAz();
+      return true;
+    }
+    cPrint("This move is not allowed");
+    return false;
+  };
+  bool moveAzEast() {
+    if (!limitSwitchesAzimutUP()) return false;
+    setDirection(AZ_DIR, UP);
+    if (pulseMotor(AZ_PUL)) {
+      position->incAz();
+      return true;
+    }
+    cPrint("This move is not allowed");
+    return false;
+  };
+  bool moveElNorth() {
+    if (!limitSwitchesElevationUP()) return false;
+    setDirection(EL_DIR, UP);
+    if (pulseMotor(EL_PUL)) {
+      position->decEl();
+      return true;
+    }
+    cPrint("This move is not allowed");
+    return false;
+  };
+  bool moveElSouth() {
+    if (!limitSwitchesElevationDOWN()) return false;
+    setDirection(EL_DIR, DOWN);
+    if (pulseMotor(EL_PUL)) {
+      position->incEl();
+      return true;
+    }
+    cPrint("This move is not allowed");
+    return false;
   };
 
   bool azIsInRef() { return !digitalRead(SW_AZ_REF); };

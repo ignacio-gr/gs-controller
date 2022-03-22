@@ -1,83 +1,77 @@
 #include "MotionController.h"
 
 void MotionController::manualMove() {
+  timeBetweenPulses = 400;
   if (digitalRead(MANUAL_STOP)) {  // BTN central no pulsado
     // cPrintLn("MANUAL_STOP");
-    if (pulseAzUp() && limitSwitchesAzimutUP()) {
+    if (!digitalRead(MANUAL_AZ_UP)) {
       cPrintLn("MANUAL_AZ_UP");
-      setDirection(AZ_DIR, UP);
-      if (pulseMotor(AZ_PUL)) position->incAz();
+      moveAzEast();
     }
-    if (pulseAzDown() && limitSwitchesAzimutDOWN()) {
+    if (!digitalRead(MANUAL_AZ_DOWN)) {
       cPrintLn("MANUAL_AZ_DOWN");
-      setDirection(AZ_DIR, DOWN);
-      if (pulseMotor(AZ_PUL)) position->decAz();
+      moveAzWest();
     }
-    if (pulseElUp() && limitSwitchesElevationUP()) {
+    if (!digitalRead(MANUAL_EL_UP)) {
       cPrintLn("MANUAL_EL_UP");
-      setDirection(EL_DIR, UP);
-      if (pulseMotor(EL_PUL)) position->incEl();
+      moveElSouth();
     }
-    if (pulseElDown() && limitSwitchesElevationDOWN()) {
+    if (!digitalRead(MANUAL_EL_DOWN)) {
       cPrintLn("MANUAL_EL_DOWN");
-      setDirection(EL_DIR, DOWN);
-      if (pulseMotor(EL_PUL)) position->decEl();
+      moveElNorth();
     }
   } else {  // BTN central pulsado
     float salto = 1.0;
     uint32_t pulses = position->getStepsByDegrees(salto);
     String logPulses = (String) " " + salto + " grados";
 
-    if (pulseAzUp() && limitSwitchesAzimutUP()) {
+    if (pulseAzUp() && !limitSwitchesAzimutUP()) {
       cPrintLn("MANUAL_AZ_UP_" + logPulses);
-      setDirection(AZ_DIR, UP);
       uint32_t count = moveXPulses(AZ_PUL, AZ_DIR, UP, pulses);
       position->incAz(count);
     }
-    if (pulseAzDown() && limitSwitchesAzimutDOWN()) {
+    if (pulseAzDown() && !limitSwitchesAzimutDOWN()) {
       cPrintLn("MANUAL_AZ_DOWN_" + logPulses);
-      setDirection(AZ_DIR, DOWN);
       uint32_t count = moveXPulses(AZ_PUL, AZ_DIR, DOWN, pulses);
       position->decAz(count);
     }
-    if (pulseElUp() && limitSwitchesElevationUP()) {
+    if (pulseElUp() && !limitSwitchesElevationDOWN()) {
       cPrintLn("MANUAL_EL_UP_" + logPulses);
-      setDirection(EL_DIR, UP);
-      uint32_t count = moveXPulses(EL_PUL, EL_DIR, UP, pulses);
+      uint32_t count = moveXPulses(EL_PUL, EL_DIR, DOWN, pulses);
       position->incEl(count);
     }
-    if (pulseElUp() && limitSwitchesElevationDOWN()) {
+    if (pulseElUp() && !limitSwitchesElevationUP()) {
       cPrintLn("MANUAL_EL_DOWN_" + logPulses);
-      setDirection(EL_DIR, DOWN);
-      uint32_t count = moveXPulses(EL_PUL, EL_DIR, DOWN, pulses);
+      uint32_t count = moveXPulses(EL_PUL, EL_DIR, UP, pulses);
       position->decEl(count);
     }
   }
-  position->printActualPosition();
+  static uint32_t lastPrint = millis();
+  if (millis() - lastPrint > 5000) {
+    cPrintLn("Manual");
+    // position->printActualPosition();
+    lastPrint = millis();
+  }
 }
 
 void MotionController::checkPosition() {
   if (!calibrated) return;
 
   // Azimut
-  if (position->getActualStepAzimut() != position->getNextStepAzimut() && !limitSwitchesAzimut()) {
+  if (position->getActualStepAzimut() != position->getNextStepAzimut()) {
     if (position->getActualStepAzimut() < position->getNextStepAzimut()) {
-      setDirection(AZ_DIR, UP);
-      if (pulseMotor(AZ_PUL)) position->incAz();
+      moveAzEast();
     } else {
-      setDirection(AZ_DIR, DOWN);
-      if (pulseMotor(AZ_PUL)) position->decAz();
+      moveAzWest();
     }
   }
 
   // Elevation
-  if (position->getActualStepElevation() != position->getNextStepElevation() && !limitSwitchesElevation()) {
+  if (position->getActualStepElevation() != position->getNextStepElevation()) {
     if (position->getActualStepElevation() < position->getNextStepElevation()) {
-      setDirection(EL_DIR, UP);
-      if (pulseMotor(EL_PUL)) position->incEl();
+      moveElNorth();
     } else {
-      setDirection(EL_DIR, DOWN);
-      if (pulseMotor(EL_PUL)) position->decEl();
+      moveElSouth();
     }
   }
 }  // end checkPosition
@@ -98,72 +92,92 @@ void MotionController::initialCalibration() {
   while (!pulseStop())
     ;
 
+  timeBetweenPulses = 1000;
+
   // Azimut calibration
   while (!azIsInRef())
     ;
+
   uint32_t countAzUp = 0;
   uint32_t countAzDown = 0;
   cPrintLn("Move AZ UP");
   while (azIsInRef()) {
-    setDirection(AZ_DIR, UP);
-    pulseMotor(AZ_PUL);
+      moveAzEast();
     countAzUp++;
-    cPrintLn(countAzUp);
+    //cPrintLn(countAzUp);
   }
   cPrintLn(countAzUp);
+  delay(1000);
   cPrintLn("Move AZ DOWN");
   while (azIsInRef() || countAzDown < countAzUp) {
-    setDirection(AZ_DIR, DOWN);
-    pulseMotor(AZ_PUL);
+      moveAzWest();
     countAzDown++;
-    cPrintLn(countAzDown);
+    //cPrintLn(countAzDown);
   }
   cPrintLn(countAzDown);
+  delay(1000);
   cPrintLn("Move AZ to Center");
   uint32_t diffAz = countAzDown / 2;
   for (uint32_t i = 0; i < diffAz; i++) {
-    setDirection(AZ_DIR, UP);
-    pulseMotor(AZ_PUL);
-    cPrintLn(i);
+      moveAzEast();
+    //cPrintLn(i);
   }
   cPrintLn("AZ in center of Ref");
 
   position->clearAzSteps();
 
-  while (true)
-    ;
+  // while (true);
 
   // Elevation calibration
-  while (!elIsInRef())
-    ;
-  uint32_t countElUp = 0;
-  uint32_t countElDown = 0;
+
+  timeBetweenPulses = 2500;
+
+  cPrintLn("Found the ref switch");
+  while (!elIsInRef()) {
+      moveElNorth();
+  }
+
+  delay(1000);
   cPrintLn("Move EL UP");
-  while (elIsInRef()) {
-    setDirection(EL_DIR, UP);
-    pulseMotor(EL_DIR);
+  uint32_t countElUp = 0;//TODO quitar este contador y este movimiento ya no es necesario
+  /*while (elIsInRef()) {
+      moveElSouth();
     countElUp++;
-  }
+    // cPrintLn(countElUp);
+  }*/
+  delay(1000);
   cPrintLn("Move EL DOWN");
-  while (!elIsInRef() || countElDown < countElUp) {
-    setDirection(EL_DIR, DOWN);
-    pulseMotor(EL_DIR);
+  uint32_t countElDown = 0;
+  while (elIsInRef() || countElDown < countElUp) {
+      moveElNorth();
     countElDown++;
+    // cPrintLn(countElDown);
   }
+  delay(1000);
   cPrintLn("Move EL to Center");
   uint32_t diffEl = countElDown / 2;
   for (uint32_t i = 0; i < diffEl; i++) {
-    setDirection(EL_DIR, UP);
-    pulseMotor(EL_DIR);
+      moveElSouth();
+    // cPrintLn(i);
   }
   cPrintLn("EL in center of Ref");
 
   position->clearElSteps();
 
+  cPrintLn("Move to 0");
+  float salto = 18.0;
+  uint32_t pulses = position->getStepsByDegrees(salto);
+  // cPrintLn((String) " " + salto + " grados");
+  delay(1000);
+  while (pulses > 0) {
+    setDirection(EL_DIR, DOWN);
+    if (pulseMotor(EL_PUL)) pulses--;
+  }
+
   // TODO poner maximo de seguridad de movimiento
 
   cPrint("Calibration OK -> Azimut : ");
-  cPrintLn(countAzDown);
+  // cPrintLn(countAzDown);
   cPrint("Calibration OK -> Elevation : ");
   cPrintLn(countElDown);
   cPrintLn("Finalizada la calibracion automatica de la antena");

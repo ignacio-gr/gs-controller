@@ -6,7 +6,7 @@
 // 1 step = 0.00014 grados * 100000 // 14 grados por 100000 steps con 6400 uStep -> 15.625 pasos completos
 #define PRECISION 14
 #define FACTOR 100000
-#define MICRO_STEPS_REF 6400
+#define MICRO_STEPS_REF 3200
 #define MICRO_STEPS 400
 
 // TODO establecer puntos iniciales de referencia, en grados
@@ -28,7 +28,7 @@ class PositionController {
   int32_t getActualElevation() { return elStepActual * PRECISION * MICRO_STEPS_REF / MICRO_STEPS - ERROR_EL; };
 
   int32_t getStepsByDegrees(int32_t degress) { return degress / PRECISION * MICRO_STEPS / MICRO_STEPS_REF; };
-  int32_t getStepsByDegrees(float degress) { return getStepsByDegrees(degress * FACTOR); };
+  int32_t getStepsByDegrees(float degress) { return getStepsByDegrees((int32_t)(degress * FACTOR)); };
 
   int32_t incAz() { return azStepActual++; };
   int32_t decAz() { return azStepActual--; };
@@ -54,13 +54,8 @@ class PositionController {
   int32_t getNextStepAzimut() { return azStepNext; };
   int32_t getNextStepElevation() { return elStepNext; };
 
-  int getValueByString(uint8_t* buf, uint8_t* s, char endSymbol, bool decimal = false);
-  bool isNumber(uint8_t c) { return (c >= 48 && c <= 57); };
-  uint8_t getNumber(uint8_t c) {
-    if (isNumber(c)) return c - 48;
-    return 0;
-  };
   void listenGPredict();
+
 
   void printActualPosition();
 
@@ -71,6 +66,11 @@ class PositionController {
   int32_t elStepNext = 0;
 
   bool setNewPos(int32_t az, int32_t el);
+  void sendPosition();
+  void parseCommandAndApply();
+
+  String buffer = "";
+  bool saveCommand = false;
 };
 
 #endif
