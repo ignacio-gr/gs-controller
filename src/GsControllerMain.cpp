@@ -16,6 +16,8 @@ void setup() {
   }
 
   motion.initialCalibration();
+  //position.clearAzSteps();
+  //position.clearElSteps();
 }
 
 void loop() {

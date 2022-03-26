@@ -10,22 +10,22 @@
 #define MICRO_STEPS 400
 
 // TODO establecer puntos iniciales de referencia, en grados
-#define ERROR_EL 3 * FACTOR
-#define ERROR_AZ 10 * FACTOR
+#define REF_EL 74.80
+#define REF_AZ 3.0
 
 // TODO establecer limites, en steps, establecerlos por lectura empirica no por grados, los pasos que esta los limites
 // con respecto al Ref siempre sera igual da igual al calibracion
 #define LIMIT_AZ_UP ((180 + 3) * FACTOR / PRECISION * MICRO_STEPS / MICRO_STEPS_REF)
 #define LIMIT_AZ_DOWN ((-180 + 3) * FACTOR / PRECISION * MICRO_STEPS / MICRO_STEPS_REF)
-#define LIMIT_EL_UP ((180 + 10) * FACTOR / PRECISION * MICRO_STEPS / MICRO_STEPS_REF)
-#define LIMIT_EL_DOWN ((0 + 10) * FACTOR / PRECISION * MICRO_STEPS / MICRO_STEPS_REF)
+#define LIMIT_EL_UP ((180 + 1) * FACTOR / PRECISION * MICRO_STEPS / MICRO_STEPS_REF)
+#define LIMIT_EL_DOWN ((0 - 1) * FACTOR / PRECISION * MICRO_STEPS / MICRO_STEPS_REF)
 
 class PositionController {
  public:
-  float getActualAzimutFloat() { return (float)getActualAzimut() / FACTOR + 180; };
-  float getActualElevationFloat() { return (float)getActualElevation() / FACTOR + 90; };
-  int32_t getActualAzimut() { return azStepActual * PRECISION * MICRO_STEPS_REF / MICRO_STEPS - ERROR_AZ; };
-  int32_t getActualElevation() { return elStepActual * PRECISION * MICRO_STEPS_REF / MICRO_STEPS - ERROR_EL; };
+  float getActualAzimutFloat() { return (float)getActualAzimut() / FACTOR; };
+  float getActualElevationFloat() { return (float)getActualElevation() / FACTOR; };
+  int32_t getActualAzimut() { return azStepActual * PRECISION * MICRO_STEPS_REF / MICRO_STEPS; };
+  int32_t getActualElevation() { return elStepActual * PRECISION * MICRO_STEPS_REF / MICRO_STEPS; };
 
   int32_t getStepsByDegrees(int32_t degress) { return degress / PRECISION * MICRO_STEPS / MICRO_STEPS_REF; };
   int32_t getStepsByDegrees(float degress) { return getStepsByDegrees((int32_t)(degress * FACTOR)); };
@@ -41,12 +41,12 @@ class PositionController {
   int32_t decEl(int32_t pulses) { return elStepActual -= pulses; };
 
   void clearAzSteps() {
-    azStepActual = 0;
-    azStepNext = 0;
+    azStepActual = getStepsByDegrees((float)(3.0));
+    azStepNext = azStepActual;
   };
   void clearElSteps() {
-    elStepActual = 0;
-    elStepNext = 0;
+    elStepActual = getStepsByDegrees((float)(90.0 - 15.20));
+    elStepNext = elStepActual;
   };
 
   int32_t getActualStepAzimut() { return azStepActual; };
@@ -56,8 +56,8 @@ class PositionController {
 
   void listenGPredict();
 
-
   void printActualPosition();
+  void sendPosition();
 
  private:
   int32_t azStepActual = 0;
@@ -66,7 +66,6 @@ class PositionController {
   int32_t elStepNext = 0;
 
   bool setNewPos(int32_t az, int32_t el);
-  void sendPosition();
   void parseCommandAndApply();
 
   String buffer = "";

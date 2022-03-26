@@ -2,7 +2,7 @@
 #include "PositionController.h"
 
 void PositionController::listenGPredict() {
-  if (interfazSerial.available()>0) {
+  if (interfazSerial.available() > 0) {
     while (interfazSerial.available() > 0) {
       char c = interfazSerial.read();
 
@@ -24,7 +24,20 @@ void PositionController::listenGPredict() {
 };
 
 void PositionController::parseCommandAndApply() {
-  // P180.00 45.00\n
+  // P180,00 45,00\n
+  if (!(buffer[0] == SET_POS)) return;
+
+  ParseNumbers parseNumbers;
+  uint8_t start = 1;
+  float az = parseNumbers.getValueFloat(buffer, &start, ' ');
+  float el = parseNumbers.getValueFloat(buffer, &start, '\n');
+  cPrintLn((String) "Received pos- > Az: " + az + " El: " + el);
+  setNewPos(az * FACTOR, el * FACTOR);
+}
+
+/*
+void PositionController::parseCommandAndApply() {
+  // P180,00 45,00\n
   if (!(buffer[0] == SET_POS)) return;
 
   ParseNumbers parseNumbers;
@@ -42,11 +55,11 @@ void PositionController::parseCommandAndApply() {
   int32_t el = el_e * FACTOR + el_d * (FACTOR / 10000);
 
   setNewPos(az, el);
-}
+}*/
 
 bool PositionController::setNewPos(int32_t az, int32_t el) {
-  int32_t azStepNextAux = getStepsByDegrees(az - 180 * FACTOR + ERROR_AZ);
-  int32_t elStepNextAux = getStepsByDegrees(el + ERROR_EL);
+  int32_t azStepNextAux = getStepsByDegrees(az);
+  int32_t elStepNextAux = getStepsByDegrees(el);
   cPrint("New position -> Azimut: ");
   cPrint((float)az / FACTOR);
   cPrint("º Elevation: ");
@@ -64,11 +77,10 @@ bool PositionController::setNewPos(int32_t az, int32_t el) {
 };
 
 void PositionController::sendPosition() {
-  iPrint("AZ");
-  iPrint(getActualAzimut());
-  iPrint(" EL");
-  iPrint(getActualElevation());
-  iPrintLn(" $");
+  iPrint("A");
+  iPrintLn(getActualAzimutFloat());
+  iPrint("E");
+  iPrintLn(getActualElevationFloat());
 }
 
 void PositionController::printActualPosition(){

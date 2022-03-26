@@ -13,6 +13,15 @@ class ParseNumbers {
   };
 
  public:
+ 
+  float getValueFloat(String buf, uint8_t* s, char endSymbol) {
+    String bufAux = buf.substring(*s);
+    bufAux.replace(',', '.');
+    String v = bufAux.substring(0, bufAux.indexOf(endSymbol));
+    *s += v.length() + 1;
+    return v.toFloat();
+  }
+  
   int getValue(uint8_t* buf, uint8_t* s, char endSymbol, bool decimal = false) {
     int value = -1;
     uint8_t start = *s;

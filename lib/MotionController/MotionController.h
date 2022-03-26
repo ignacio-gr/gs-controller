@@ -110,43 +110,43 @@ class MotionController {
   };
 
   bool moveAzWest() {
-    if (!limitSwitchesAzimutDOWN()) return false;
+    if (limitSwitchesAzimutDOWN()) return false;
     setDirection(AZ_DIR, DOWN);
     if (pulseMotor(AZ_PUL)) {
       position->decAz();
       return true;
     }
-    cPrint("This move is not allowed");
+    //cPrint("This move is not allowed");
     return false;
   };
   bool moveAzEast() {
-    if (!limitSwitchesAzimutUP()) return false;
+    if (limitSwitchesAzimutUP()) return false;
     setDirection(AZ_DIR, UP);
     if (pulseMotor(AZ_PUL)) {
-      position->incAz();
+      position->incAz();  
       return true;
     }
-    cPrint("This move is not allowed");
+    //cPrint("This move is not allowed");
     return false;
   };
   bool moveElNorth() {
-    if (!limitSwitchesElevationUP()) return false;
+    if (limitSwitchesElevationUP()) return false;
     setDirection(EL_DIR, UP);
     if (pulseMotor(EL_PUL)) {
       position->decEl();
       return true;
     }
-    cPrint("This move is not allowed");
+    //cPrint("This move is not allowed");
     return false;
   };
   bool moveElSouth() {
-    if (!limitSwitchesElevationDOWN()) return false;
+    if (limitSwitchesElevationDOWN()) return false;
     setDirection(EL_DIR, DOWN);
     if (pulseMotor(EL_PUL)) {
       position->incEl();
       return true;
     }
-    cPrint("This move is not allowed");
+    //cPrint("This move is not allowed");
     return false;
   };
 
