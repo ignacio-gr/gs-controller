@@ -1,6 +1,7 @@
 #include "MotionController.h"
 
 void MotionController::manualMove() {
+  
   timeBetweenPulses = 400;
   if (!digitalRead(MANUAL_STOP)) {  // BTN central no pulsado
     // cPrintLn("MANUAL_STOP");
@@ -52,7 +53,7 @@ void MotionController::manualMove() {
     // position->printActualPosition();
     lastPrint = millis();
   }
-  
+
   static unsigned long last = 0;
   if (millis() - last > 1000) {
     last = millis();
@@ -101,12 +102,12 @@ void MotionController::initialCalibration() {
   }
 
   cPrintLn("Iniciando calibracion automatica de la antena");
-
-  while (digitalRead(MANUAL_STOP))
-    ;
-  while (!digitalRead(MANUAL_STOP))
-    ;
-
+  /*
+    while (digitalRead(MANUAL_STOP))
+      ;
+    while (!digitalRead(MANUAL_STOP))
+      ;
+  */
   timeBetweenPulses = 500;
 
   // Azimut calibration
@@ -160,7 +161,7 @@ void MotionController::initialCalibration() {
     countElUp++;
     // cPrintLn(countElUp);
   }*/
-  delay(1000);
+  delay(2000);
   cPrintLn("Move EL DOWN");
   uint32_t countElDown = 0;
   while (elIsInRef() || countElDown < 100) {
@@ -168,7 +169,7 @@ void MotionController::initialCalibration() {
     countElDown++;
     // cPrintLn(countElDown);
   }
-  delay(1000);
+  delay(2000);
   cPrintLn("Move EL to Center");
   uint32_t diffEl = countElDown / 2;
   for (uint32_t i = 0; i < diffEl; i++) {
@@ -178,17 +179,22 @@ void MotionController::initialCalibration() {
   cPrintLn("EL in center of Ref");
 
   position->clearElSteps();
-/*
-  cPrintLn("Move to 0");
-  float salto = 18.0;
-  uint32_t pulses = position->getStepsByDegrees(salto*FACTOR);
-  // cPrintLn((String) " " + salto + " grados");
-  delay(1000);
-  while (pulses > 0) {
-    setDirection(EL_DIR, DOWN);
-    if (pulseMotor(EL_PUL)) pulses--;
-  }
-*/
+  /*
+    cPrintLn("Move to 0");
+    float salto = 18.0;
+    uint32_t pulses = position->getStepsByDegrees(salto*FACTOR);
+    // cPrintLn((String) " " + salto + " grados");
+    delay(1000);
+    while (pulses > 0) {
+      setDirection(EL_DIR, DOWN);
+      if (pulseMotor(EL_PUL)) pulses--;
+    }
+  */
+
+  delay(2000);
+    cPrintLn("Move to (0.0 90.0)");
+  position->setAzElNext(0.0, 90.0);
+
   cPrint("Calibration OK -> Azimut : ");
   cPrintLn(countAzDown);
   cPrint("Calibration OK -> Elevation : ");

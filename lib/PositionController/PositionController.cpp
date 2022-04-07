@@ -7,6 +7,7 @@ void PositionController::listenGPredict() {
       char c = interfazSerial.read();
 
       if (c == GET_POS) sendPosition();
+      if (c == STOP) stopMove();
 
       if (c == SET_POS) {
         saveCommand = true;
@@ -28,10 +29,11 @@ void PositionController::parseCommandAndApply() {
   if (!(buffer[0] == SET_POS)) return;
 
   ParseNumbers parseNumbers;
-  uint8_t start = 1;
+  uint8_t start = 2;
   float az = parseNumbers.getValueFloat(buffer, &start, ' ');
   float el = parseNumbers.getValueFloat(buffer, &start, '\n');
   cPrintLn((String) "Received pos- > Az: " + az + " El: " + el);
+  if (az > 180) az - 360;
   setNewPos(az * FACTOR, el * FACTOR);
 }
 

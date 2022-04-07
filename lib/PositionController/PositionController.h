@@ -15,14 +15,18 @@
 
 // TODO establecer limites, en steps, establecerlos por lectura empirica no por grados, los pasos que esta los limites
 // con respecto al Ref siempre sera igual da igual al calibracion
-#define LIMIT_AZ_UP ((180 + 3) * FACTOR / PRECISION * MICRO_STEPS / MICRO_STEPS_REF)
-#define LIMIT_AZ_DOWN ((-180 + 3) * FACTOR / PRECISION * MICRO_STEPS / MICRO_STEPS_REF)
+#define LIMIT_AZ_UP ((180 + 1) * FACTOR / PRECISION * MICRO_STEPS / MICRO_STEPS_REF)
+#define LIMIT_AZ_DOWN ((-180 + 1) * FACTOR / PRECISION * MICRO_STEPS / MICRO_STEPS_REF)
 #define LIMIT_EL_UP ((180 + 1) * FACTOR / PRECISION * MICRO_STEPS / MICRO_STEPS_REF)
 #define LIMIT_EL_DOWN ((0 - 1) * FACTOR / PRECISION * MICRO_STEPS / MICRO_STEPS_REF)
 
 class PositionController {
  public:
-  float getActualAzimutFloat() { return (float)getActualAzimut() / FACTOR; };
+  float getActualAzimutFloat() {
+    float az = (float)getActualAzimut() / FACTOR;
+    if (az < 0) az + 360;
+    return az;
+  };
   float getActualElevationFloat() { return (float)getActualElevation() / FACTOR; };
   int32_t getActualAzimut() { return azStepActual * PRECISION * MICRO_STEPS_REF / MICRO_STEPS; };
   int32_t getActualElevation() { return elStepActual * PRECISION * MICRO_STEPS_REF / MICRO_STEPS; };
@@ -41,12 +45,17 @@ class PositionController {
   int32_t decEl(int32_t pulses) { return elStepActual -= pulses; };
 
   void clearAzSteps() {
-    azStepActual = getStepsByDegrees((float)(3.0));
+    azStepActual = getStepsByDegrees((float)(0.0));
     azStepNext = azStepActual;
   };
   void clearElSteps() {
     elStepActual = getStepsByDegrees((float)(90.0 - 15.20));
     elStepNext = elStepActual;
+  };
+
+  void setAzElNext(float az, float el) {
+    azStepNext = getStepsByDegrees(az);
+    elStepNext = getStepsByDegrees(el);
   };
 
   int32_t getActualStepAzimut() { return azStepActual; };
@@ -67,6 +76,10 @@ class PositionController {
 
   bool setNewPos(int32_t az, int32_t el);
   void parseCommandAndApply();
+  void stopMove(){
+    azStepNext = azStepActual;
+    elStepNext = elStepActual;
+  };
 
   String buffer = "";
   bool saveCommand = false;

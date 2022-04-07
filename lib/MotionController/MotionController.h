@@ -75,7 +75,7 @@ class MotionController {
   uint32_t timeBetweenPulses = 500;
   uint32_t lastPulse = 0;
 
-  void restartSpeed() { timeBetweenPulses = 15; };
+  void restartSpeed() { timeBetweenPulses = 500; };
 
   void setDirection(uint8_t pin, uint8_t dir) {
     digitalWrite(pin, dir);

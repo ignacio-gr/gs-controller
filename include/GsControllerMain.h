@@ -18,7 +18,7 @@
 ////////////////////////////
 ////       Clases       ////
 ////////////////////////////
-HardwareSerial& interfazSerial = Serial;
+HardwareSerial& interfazSerial = Serial2;
 PositionController position;
 MotionController motion(&position);
 
