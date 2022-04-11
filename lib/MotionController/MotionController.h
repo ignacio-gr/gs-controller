@@ -71,82 +71,111 @@ class MotionController {
  private:
   PositionController* position;
   bool calibrated = false;  // TODO false
-  uint16_t timePulse = 50;  // minimo 3
-  uint32_t timeBetweenPulses = 500;
+  uint16_t timePulse = 50;  // minimo 50
+  uint32_t timeBetweenPulses = 180000;
+  uint32_t tBP = 180000;
+  uint32_t tBPaz = 180000;
   uint32_t lastPulse = 0;
+  uint32_t maxSpeed = 0;
 
-  void restartSpeed() { timeBetweenPulses = 500; };
+  void autoSpeed() { maxSpeed = 8000; };
+  void restartSpeed() { maxSpeed = 8000; };
+  void calibrationSpeed() { maxSpeed = 150000; };
 
   void setDirection(uint8_t pin, uint8_t dir) {
     digitalWrite(pin, dir);
     delayMicroseconds(10);
   };
+  bool checkDirection(uint8_t pin, uint8_t dir) { return (digitalRead(pin) == dir); };
 
-  bool pulseMotor(uint8_t pin) {
-    if (timeBetweenPulses < 300) timeBetweenPulses = 300;
-    if (micros() - lastPulse > timeBetweenPulses) {
-      delayMicroseconds(timePulse);
+  bool pulseMotorEl(uint8_t pin) {
+    static unsigned long lastP = 0;
+    if (tBP < maxSpeed) tBP = maxSpeed;
+    if (micros() - lastP > tBP / 100) {
       digitalWrite(pin, LOW);
-      delayMicroseconds(timePulse);
+      delayMicroseconds(5);
       digitalWrite(pin, HIGH);
-      delayMicroseconds(timePulse);
-      lastPulse = micros();
+
+      if (tBP > 1) {
+        float d = tBP * 0.001;
+        if (d < 1) d = 1;
+        tBP = tBP - d;
+      }
+      if ((micros() - lastP) > timeBetweenPulses / 100 * 2) tBP = timeBetweenPulses;
+
+      lastP = micros();
       return true;
     }
     return false;
   };
 
-  uint32_t moveXPulses(uint8_t pin, uint8_t dirPin, uint8_t dir, uint32_t pulses) {
-    timeBetweenPulses = 500;
-    setDirection(dirPin, dir);
-    uint32_t i = 0;
-    for (i = 0; i < pulses; i++) {
-      if (allSwitches()) return i;
-      if (pulseStop()) return i;
-      pulseMotor(pin);
-      // cPrintLn(i);  // TODO estudiar porque hace falta esto, puede ser por el ancho de pulso
+  bool pulseMotorAz(uint8_t pin) {
+    static unsigned long lastP = 0;
+    if (tBPaz < maxSpeed) tBPaz = maxSpeed;
+    if (micros() - lastP > tBPaz / 100) {
+      digitalWrite(pin, LOW);
+      delayMicroseconds(5);
+      digitalWrite(pin, HIGH);
+
+      if (tBPaz > 1) {
+        float d = tBPaz * 0.001;
+        if (d < 1) d = 1;
+        tBPaz = tBPaz - d;
+      }
+      if ((micros() - lastP) > timeBetweenPulses / 100 * 2) tBPaz = timeBetweenPulses;
+
+      lastP = micros();
+      return true;
     }
-    return i;
+    return false;
   };
 
   bool moveAzWest() {
     if (limitSwitchesAzimutDOWN()) return false;
+    if (!checkDirection(AZ_DIR, DOWN)) tBPaz = timeBetweenPulses;
+
     setDirection(AZ_DIR, DOWN);
-    if (pulseMotor(AZ_PUL)) {
+    if (pulseMotorAz(AZ_PUL)) {
       position->decAz();
       return true;
     }
-    //cPrint("This move is not allowed");
+    cPrint(LowDebug, "This move is not allowed");
     return false;
   };
+
   bool moveAzEast() {
     if (limitSwitchesAzimutUP()) return false;
+    if (!checkDirection(AZ_DIR, UP)) tBPaz = timeBetweenPulses;
     setDirection(AZ_DIR, UP);
-    if (pulseMotor(AZ_PUL)) {
-      position->incAz();  
+    if (pulseMotorAz(AZ_PUL)) {
+      position->incAz();
       return true;
     }
-    //cPrint("This move is not allowed");
+    cPrint(LowDebug, "This move is not allowed");
     return false;
   };
+
   bool moveElNorth() {
     if (limitSwitchesElevationUP()) return false;
+    if (!checkDirection(EL_DIR, UP)) tBP = timeBetweenPulses;
     setDirection(EL_DIR, UP);
-    if (pulseMotor(EL_PUL)) {
+    if (pulseMotorEl(EL_PUL)) {
       position->decEl();
       return true;
     }
-    //cPrint("This move is not allowed");
+    cPrint(LowDebug, "This move is not allowed");
     return false;
   };
+
   bool moveElSouth() {
     if (limitSwitchesElevationDOWN()) return false;
+    if (!checkDirection(EL_DIR, DOWN)) tBP = timeBetweenPulses;
     setDirection(EL_DIR, DOWN);
-    if (pulseMotor(EL_PUL)) {
+    if (pulseMotorEl(EL_PUL)) {
       position->incEl();
       return true;
     }
-    //cPrint("This move is not allowed");
+    cPrint(LowDebug, "This move is not allowed");
     return false;
   };
 

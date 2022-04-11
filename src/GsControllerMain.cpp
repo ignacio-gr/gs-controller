@@ -5,33 +5,35 @@
 
 void setup() {
   Serial.begin(MONITOR_SPEED);
-  interfazSerial.begin(MONITOR_SPEED);
+  interfazSerial.begin(9600);
   delay(1000);
 
   cPrintLn("Estación terrena UVigo SpaceLab");
 
-  pinMode(13, INPUT_PULLUP);
-  while (!digitalRead(13)) {
+  pinMode(MANUALPIN, INPUT_PULLUP);
+  while (!digitalRead(MANUALPIN)) {
     motion.manualMove();
   }
 
   motion.initialCalibration();
-  //position.clearAzSteps();
-  //position.clearElSteps();
+  // position.clearStepsRef();
 }
 
 void loop() {
-  while (!digitalRead(13)) {
+  if (!digitalRead(MANUALPIN)) {
     motion.manualMove();
+  } else {
+    motion.checkPosition();
   }
+  
+    position.listenGPredict();
+    
+  /*
+    static unsigned long last = 0;
+    if (millis() - last > 5000) {
+      last = millis();
+      position->sendPosition();
+    }
+    */
 
-/*
-  static uint32_t lastPrint = millis();
-  if (millis() - lastPrint > 5000) {
-    position.printActualPosition();
-    lastPrint = millis();
-  }
-*/
-  position.listenGPredict();
-  motion.checkPosition();
 }

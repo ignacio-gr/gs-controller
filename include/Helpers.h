@@ -11,9 +11,10 @@ class ParseNumbers {
     if (isNumber(c)) return c - 48;
     return 0;
   };
+  bool isPoint(uint8_t c) { return (c == '.'); };
+  bool isNumberOrPoint(uint8_t c) { return (isNumber(c) || isPoint(c)); };
 
  public:
- 
   float getValueFloat(String buf, uint8_t* s, char endSymbol) {
     String bufAux = buf.substring(*s);
     bufAux.replace(',', '.');
@@ -21,7 +22,7 @@ class ParseNumbers {
     *s += v.length() + 1;
     return v.toFloat();
   }
-  
+
   int getValue(uint8_t* buf, uint8_t* s, char endSymbol, bool decimal = false) {
     int value = -1;
     uint8_t start = *s;

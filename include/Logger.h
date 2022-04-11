@@ -4,8 +4,18 @@
 
 #include <Arduino.h>
 
+enum { NotDebug, LowDebug, M, H } LevelDebug;
+
+#define LEVEL_DEBUG LowDebug
+
 template <typename T>
 void cPrint(T const& value) {
+  Serial.print(value);
+}
+
+template <typename T>
+void cPrint(uint8_t l, T const& value) {
+  if (l < LEVEL_DEBUG) return;
   Serial.print(value);
 }
 
@@ -25,7 +35,7 @@ void cPrintLn(T const& value, int format) {
 }
 
 // Interfaz serial comunication
-extern HardwareSerial& interfazSerial ;
+extern HardwareSerial& interfazSerial;
 
 template <typename T>
 void iPrint(T const& value) {
