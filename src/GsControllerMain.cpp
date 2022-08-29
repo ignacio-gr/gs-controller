@@ -10,8 +10,10 @@ void setup() {
 
   cPrintLn("Estación terrena UVigo SpaceLab");
 
-  pinMode(MANUALPIN, INPUT_PULLUP);
-  while (!digitalRead(MANUALPIN)) {
+  if (digitalRead(MANUAL_STOP)) cPrintLn("El mando esta apagado");
+
+  pinMode(MANUAL_START, INPUT_PULLUP);
+  while (!digitalRead(MANUAL_START)) {
     motion.manualMove();
   }
 
@@ -20,14 +22,14 @@ void setup() {
 }
 
 void loop() {
-  if (!digitalRead(MANUALPIN)) {
+  if (!digitalRead(MANUAL_START)) {
     motion.manualMove();
   } else {
     motion.checkPosition();
   }
-  
-    position.listenGPredict();
-    
+
+  position.listenGPredict();
+
   /*
     static unsigned long last = 0;
     if (millis() - last > 5000) {
@@ -35,5 +37,4 @@ void loop() {
       position->sendPosition();
     }
     */
-
 }

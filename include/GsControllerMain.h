@@ -1,8 +1,6 @@
 // Author  : Andres Vieitez
 // Company : UVigo SpaceLab
 
-#define MANUALPIN 35
-
 
 ////////////////////////////
 //// Librerias externas ////

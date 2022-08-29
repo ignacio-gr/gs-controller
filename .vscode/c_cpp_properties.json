@@ -19,7 +19,6 @@
                 "C:/Users/andre/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
                 "C:/Users/andre/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
                 "C:/Users/andre/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
-                "C:/Users/andre/.platformio/packages/tool-unity",
                 ""
             ],
             "browse": {
@@ -36,12 +35,11 @@
                     "C:/Users/andre/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
                     "C:/Users/andre/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
                     "C:/Users/andre/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
-                    "C:/Users/andre/.platformio/packages/tool-unity",
                     ""
                 ]
             },
             "defines": [
-                "PLATFORMIO=50205",
+                "PLATFORMIO=60104",
                 "ARDUINO_AVR_MEGA2560",
                 "GS_CONTROLLER",
                 "MONITOR_SPEED=115200",

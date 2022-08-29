@@ -28,13 +28,13 @@ void PositionController::listenGPredict() {
 void PositionController::parseCommandAndApply() {
   // P180,00 45,00\n
   if (!(buffer[0] == SET_POS)) return;
-  if (!(buffer[0] == ' ')) return;
+  if (!(buffer[1] == ' ')) return;
 
   ParseNumbers parseNumbers;
   uint8_t start = 2;
   float az = parseNumbers.getValueFloat(buffer, &start, ' ');
   float el = parseNumbers.getValueFloat(buffer, &start, '\n');
-  // cPrintLn((String) "Received pos- > Az: " + az + " El: " + el);
+  //cPrintLn((String) "Received pos- > Az: " + az + " El: " + el);
   if (az > 180) az = az - 360;
   setNewPos(az * FACTOR, el * FACTOR);
 }

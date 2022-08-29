@@ -2,6 +2,7 @@
 
 void MotionController::manualMove() {
   autoSpeed();
+  isManual = true;
 
   if (!digitalRead(MANUAL_AZ_UP)) moveAzEast();
   if (!digitalRead(MANUAL_AZ_DOWN)) moveAzWest();
@@ -21,6 +22,7 @@ void MotionController::manualMove() {
 
 void MotionController::checkPosition() {
   autoSpeed();
+  isManual = false;
 
   // Azimut
   if (position->getActualStepAzimut() != position->getNextStepAzimut()) {
@@ -49,6 +51,9 @@ void MotionController::checkPosition() {
 }  // end checkPosition
 
 void MotionController::initialCalibration() {
+  while (digitalRead(MANUAL_STOP))
+    ;
+
   // TODO ahora EL no toca le Switch de ref, hacer que no lo toque o dejar empezar tocandolo?
   if (!isInParkingPosition()) {
     cPrintLn("La antena no esta correctamente posicionada para iniciar automaticamente.");
@@ -146,66 +151,6 @@ bool MotionController::pulseStop() {
   if (btn && !ant) {
     delay(20);
     btn = !digitalRead(MANUAL_STOP);
-    if (btn && !ant) {
-      ant = btn;
-      return true;
-    }
-  }
-  ant = btn;
-  return false;
-};
-
-bool MotionController::pulseAzUp() {
-  static bool ant = true;
-  bool btn = !digitalRead(MANUAL_AZ_UP);
-  if (btn && !ant) {
-    delay(20);
-    btn = !digitalRead(MANUAL_AZ_UP);
-    if (btn && !ant) {
-      ant = btn;
-      return true;
-    }
-  }
-  ant = btn;
-  return false;
-};
-
-bool MotionController::pulseAzDown() {
-  static bool ant = true;
-  bool btn = !digitalRead(MANUAL_AZ_DOWN);
-  if (btn && !ant) {
-    delay(20);
-    btn = !digitalRead(MANUAL_AZ_DOWN);
-    if (btn && !ant) {
-      ant = btn;
-      return true;
-    }
-  }
-  ant = btn;
-  return false;
-};
-
-bool MotionController::pulseElUp() {
-  static bool ant = true;
-  bool btn = !digitalRead(MANUAL_EL_UP);
-  if (btn && !ant) {
-    delay(20);
-    btn = !digitalRead(MANUAL_EL_UP);
-    if (btn && !ant) {
-      ant = btn;
-      return true;
-    }
-  }
-  ant = btn;
-  return false;
-};
-
-bool MotionController::pulseElDown() {
-  static bool ant = true;
-  bool btn = !digitalRead(MANUAL_EL_DOWN);
-  if (btn && !ant) {
-    delay(20);
-    btn = !digitalRead(MANUAL_EL_DOWN);
     if (btn && !ant) {
       ant = btn;
       return true;

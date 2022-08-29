@@ -49,6 +49,8 @@ class PositionController {
   int32_t getActualStepElevation() { return elStepActual; };
   int32_t getNextStepAzimut() { return azStepNext; };
   int32_t getNextStepElevation() { return elStepNext; };
+  int32_t getDifEl() { return abs(elStepActual - elStepNext); };
+  int32_t getDifAz() { return abs(azStepActual - azStepNext); };
 
   void listenGPredict();
 
@@ -66,7 +68,6 @@ class PositionController {
   String buffer = "";
   bool saveCommand = false;
 
-  
   float getActualAzimutFloat() {
     float az = (float)getActualAzimut() / FACTOR;
     if (az < 0) az = az + 360;
@@ -78,7 +79,6 @@ class PositionController {
 
   int32_t getStepsByDegrees(int32_t degress) { return degress / PRECISION * MICRO_STEPS / MICRO_STEPS_REF; };
   int32_t getStepsByDegrees(float degress) { return getStepsByDegrees((int32_t)(degress * FACTOR)); };
-
 };
 
 #endif
