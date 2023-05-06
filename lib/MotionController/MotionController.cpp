@@ -3,7 +3,14 @@
 void MotionController::manualMove() {
   autoSpeed();
   isManual = true;
-
+/*cPrint("MANUAL_AZ_UP");
+cPrintLn(!digitalRead(MANUAL_AZ_UP));
+cPrint("MANUAL_AZ_DOWN");
+cPrintLn(!digitalRead(MANUAL_AZ_DOWN));
+cPrint("MANUAL_EL_UP");
+cPrintLn(!digitalRead(MANUAL_EL_UP));
+cPrint("MANUAL_EL_DOWN");
+cPrintLn(!digitalRead(MANUAL_EL_DOWN));*/
   if (!digitalRead(MANUAL_AZ_UP)) moveAzEast();
   if (!digitalRead(MANUAL_AZ_DOWN)) moveAzWest();
   if (!digitalRead(MANUAL_EL_UP)) moveElSouth();
@@ -53,6 +60,8 @@ void MotionController::checkPosition() {
 void MotionController::initialCalibration() {
   while (digitalRead(MANUAL_STOP))
     ;
+
+    
 
   // TODO ahora EL no toca le Switch de ref, hacer que no lo toque o dejar empezar tocandolo?
   if (!isInParkingPosition()) {

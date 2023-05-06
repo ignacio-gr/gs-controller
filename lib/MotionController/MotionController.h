@@ -4,26 +4,44 @@
 #include "../../include/ArduinoLib.h"
 #include "../PositionController/PositionController.h"
 
-#define SW_AZ_UP 47
-#define SW_AZ_DOWN 51
-#define SW_AZ_2ND 53
-#define SW_AZ_REF 49
+#define SW_AZ_UP 43
+#define SW_AZ_DOWN 39
+#define SW_AZ_2ND 45
+#define SW_AZ_REF 41
 
-#define SW_EL_UP 39
-#define SW_EL_DOWN 43
-#define SW_EL_2ND 45
-#define SW_EL_REF 41
+#define SW_EL_UP 51
+#define SW_EL_DOWN 47
+#define SW_EL_2ND 53
+#define SW_EL_REF 49
 
-#define AZ_PUL 25
-#define AZ_DIR 23
-#define AZ_EN 33
 
-#define EL_PUL 29
-#define EL_DIR 27
-#define EL_EN 31
+#define AZ_PUL 29
+#define AZ_DIR 27
+#define AZ_EN 25
+
+#define EL_PUL 33
+#define EL_DIR 31
+#define EL_EN 23
 
 #define UP HIGH
 #define DOWN LOW
+
+#define MANUAL_AZ_UP 36
+#define MANUAL_AZ_DOWN 32
+#define MANUAL_EL_UP 30
+#define MANUAL_EL_DOWN 37
+#define MANUAL_STOP 34
+#define MANUAL_START 28
+#define NOT_USED_REMOTE 35
+
+/*
+east 36
+stop 34
+west 32
+up 30
+down 37
+start 28
+
 
 #define MANUAL_AZ_UP 36
 #define MANUAL_AZ_DOWN 34
@@ -32,6 +50,7 @@
 #define MANUAL_STOP 28
 #define MANUAL_START 35
 #define NOT_USED_REMOTE 37
+*/
 
 class MotionController {
  public:
@@ -83,8 +102,8 @@ class MotionController {
   uint32_t minSpeed = 180000;  // 180000
   uint32_t startDeceleration = 3175;
 
-  void autoSpeed() { maxSpeed = 9000; };           // 8000
-  void restartSpeed() { maxSpeed = 9000; };        // 8000
+  void autoSpeed() { maxSpeed = 50000; };           // 8000 // 9000
+  void restartSpeed() { maxSpeed = 50000; };        // 8000 // 9000
   void calibrationSpeed() { maxSpeed = 150000; };  // 150000
 
   bool safetyBroken() { return digitalRead(MANUAL_STOP); };
@@ -153,6 +172,7 @@ class MotionController {
   };
 
   bool moveAzWest() {
+    //cPrintLn("moveAzWest");
     if (limitSwitchesAzimutDOWN()) return false;
     if (!checkDirection(AZ_DIR, DOWN)) tBPaz = minSpeed;
 
@@ -166,6 +186,7 @@ class MotionController {
   };
 
   bool moveAzEast() {
+    //cPrintLn("moveAzEast");
     if (limitSwitchesAzimutUP()) return false;
     if (!checkDirection(AZ_DIR, UP)) tBPaz = minSpeed;
     setDirection(AZ_DIR, UP);
@@ -178,6 +199,8 @@ class MotionController {
   };
 
   bool moveElNorth() {
+    
+    //cPrintLn("moveElNorth");
     if (limitSwitchesElevationUP()) return false;
     if (!checkDirection(EL_DIR, UP)) tBPel = minSpeed;
     setDirection(EL_DIR, UP);
@@ -190,6 +213,8 @@ class MotionController {
   };
 
   bool moveElSouth() {
+    
+    //cPrintLn("moveElSouth");
     if (limitSwitchesElevationDOWN()) return false;
     if (!checkDirection(EL_DIR, DOWN)) tBPel = minSpeed;
     setDirection(EL_DIR, DOWN);
