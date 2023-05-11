@@ -4,15 +4,15 @@
 #include "../../include/ArduinoLib.h"
 #include "../PositionController/PositionController.h"
 
-#define SW_AZ_UP 61
-#define SW_AZ_DOWN 60
-#define SW_AZ_2ND 59
-#define SW_AZ_REF 58
+#define SW_AZ_UP 59
+#define SW_AZ_DOWN 58
+#define SW_AZ_2ND 61
+#define SW_AZ_REF 60
 
-#define SW_EL_UP 57
-#define SW_EL_DOWN 56
-#define SW_EL_2ND 55
-#define SW_EL_REF 54
+#define SW_EL_UP 55
+#define SW_EL_DOWN 54
+#define SW_EL_2ND 57
+#define SW_EL_REF 56
 
 
 #define AZ_PUL 66
