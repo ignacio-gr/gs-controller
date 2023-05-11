@@ -4,34 +4,34 @@
 #include "../../include/ArduinoLib.h"
 #include "../PositionController/PositionController.h"
 
-#define SW_AZ_UP 43
-#define SW_AZ_DOWN 39
-#define SW_AZ_2ND 45
-#define SW_AZ_REF 41
+#define SW_AZ_UP 61
+#define SW_AZ_DOWN 60
+#define SW_AZ_2ND 59
+#define SW_AZ_REF 58
 
-#define SW_EL_UP 51
-#define SW_EL_DOWN 47
-#define SW_EL_2ND 53
-#define SW_EL_REF 49
+#define SW_EL_UP 57
+#define SW_EL_DOWN 56
+#define SW_EL_2ND 55
+#define SW_EL_REF 54
 
 
-#define AZ_PUL 29
-#define AZ_DIR 27
-#define AZ_EN 25
+#define AZ_PUL 66
+#define AZ_DIR 67
+#define AZ_EN 62
 
-#define EL_PUL 33
-#define EL_DIR 31
-#define EL_EN 23
+#define EL_PUL 64
+#define EL_DIR 65
+#define EL_EN 63
 
 #define UP HIGH
 #define DOWN LOW
 
-#define MANUAL_AZ_UP 36
-#define MANUAL_AZ_DOWN 32
-#define MANUAL_EL_UP 30
-#define MANUAL_EL_DOWN 37
-#define MANUAL_STOP 34
-#define MANUAL_START 28
+#define MANUAL_AZ_UP 2
+#define MANUAL_AZ_DOWN 5
+#define MANUAL_EL_UP 6
+#define MANUAL_EL_DOWN 8
+#define MANUAL_STOP 4
+#define MANUAL_START 7
 #define NOT_USED_REMOTE 35
 
 /*
@@ -226,13 +226,13 @@ class MotionController {
     return false;
   };
 
-  bool azIsInRef() { return !digitalRead(SW_AZ_REF); };
-  bool elIsInRef() { return !digitalRead(SW_EL_REF); };
+  bool azIsInRef() { return digitalRead(SW_AZ_REF); };
+  bool elIsInRef() { return digitalRead(SW_EL_REF); };
 
-  bool limitSwitchesAzimutUP() { return !digitalRead(SW_AZ_UP) || !digitalRead(SW_AZ_2ND); };
-  bool limitSwitchesAzimutDOWN() { return !digitalRead(SW_AZ_DOWN) || !digitalRead(SW_AZ_2ND); };
-  bool limitSwitchesElevationUP() { return !digitalRead(SW_EL_UP) || !digitalRead(SW_EL_2ND); };
-  bool limitSwitchesElevationDOWN() { return !digitalRead(SW_EL_DOWN) || !digitalRead(SW_EL_2ND); };
+  bool limitSwitchesAzimutUP() { return digitalRead(SW_AZ_UP) || digitalRead(SW_AZ_2ND); };
+  bool limitSwitchesAzimutDOWN() { return digitalRead(SW_AZ_DOWN) || digitalRead(SW_AZ_2ND); };
+  bool limitSwitchesElevationUP() { return digitalRead(SW_EL_UP) || digitalRead(SW_EL_2ND); };
+  bool limitSwitchesElevationDOWN() { return digitalRead(SW_EL_DOWN) || digitalRead(SW_EL_2ND); };
 
   bool pulseStop();
 
