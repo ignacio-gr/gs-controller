@@ -78,6 +78,8 @@ class MotionController {
     pinMode(MANUAL_EL_DOWN, INPUT_PULLUP);
     pinMode(MANUAL_STOP, INPUT_PULLUP);
     pinMode(MANUAL_START, INPUT_PULLUP);
+
+    pinMode(NOT_USED_REMOTE, INPUT);
   };
 
   void checkPosition();
