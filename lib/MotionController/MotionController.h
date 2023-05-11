@@ -15,12 +15,12 @@
 #define SW_EL_REF 56
 
 
-#define AZ_PUL 66
-#define AZ_DIR 67
+#define AZ_PUL 67
+#define AZ_DIR 66
 #define AZ_EN 62
 
-#define EL_PUL 64
-#define EL_DIR 65
+#define EL_PUL 65
+#define EL_DIR 64
 #define EL_EN 63
 
 #define UP HIGH
