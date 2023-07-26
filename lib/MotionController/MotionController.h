@@ -26,13 +26,14 @@
 #define UP HIGH
 #define DOWN LOW
 
-#define MANUAL_AZ_UP 2
-#define MANUAL_AZ_DOWN 5
-#define MANUAL_EL_UP 6
-#define MANUAL_EL_DOWN 8
-#define MANUAL_STOP 4
-#define MANUAL_START 7
-#define NOT_USED_REMOTE 35
+#define MANUAL_AZ_UP 8
+#define MANUAL_AZ_DOWN 6
+#define MANUAL_EL_UP 5
+#define MANUAL_EL_DOWN 3
+#define MANUAL_STOP 7
+#define MANUAL_START 4
+#define NOT_USED_REMOTE 2
+#define SHUTDOWN 9  // Forced to HIGH
 
 /*
 east 36
@@ -80,6 +81,9 @@ class MotionController {
     pinMode(MANUAL_START, INPUT_PULLUP);
 
     pinMode(NOT_USED_REMOTE, INPUT);
+
+    pinMode(SHUTDOWN, OUTPUT);
+    digitalWrite(SHUTDOWN, HIGH);
   };
 
   void checkPosition();
